@@ -34,10 +34,9 @@ boton.addEventListener("click", async function () {
 
         const movimiento = resultado.movimiento;
 
-        const importe = Number(movimiento.importe).toLocaleString("es-AR", {
-            style: "currency",
-            currency: "ARS",
-            minimumFractionDigits: 0
+        const importe = "$" + Number(movimiento.importe).toLocaleString("es-AR", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         });
 
         const tipo = movimiento.paraLia
