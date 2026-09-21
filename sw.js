@@ -1,11 +1,13 @@
-const CACHE_NAME = "lia-v1";
+const CACHE_NAME = "lia-v2";
 
 const ARCHIVOS = [
     "./",
     "./index.html",
     "./styles.css",
     "./app.js",
-    "./manifest.json"
+    "./manifest.json",
+    "./assets/icon-192.png",
+    "./assets/icon-512.png"
 ];
 
 self.addEventListener("install", event => {
