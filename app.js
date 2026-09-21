@@ -57,3 +57,7 @@ boton.addEventListener("click", async function () {
         boton.disabled = false;
     }
 });
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js")
+        .catch(error => console.error("Error registrando Service Worker:", error));
+}
