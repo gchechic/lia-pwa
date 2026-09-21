@@ -1,4 +1,4 @@
-const CACHE_NAME = "lia-v2";
+const CACHE_NAME = "lia-v3";
 
 const ARCHIVOS = [
     "./",
