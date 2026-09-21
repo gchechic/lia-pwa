@@ -34,10 +34,21 @@ boton.addEventListener("click", async function () {
 
         const movimiento = resultado.movimiento;
 
+        const importe = Number(movimiento.importe).toLocaleString("es-AR", {
+            style: "currency",
+            currency: "ARS",
+            minimumFractionDigits: 0
+        });
+
+        const tipo = movimiento.paraLia
+            ? "A favor de Lia"
+            : "A mi favor";
+
         estado.textContent =
-            `${movimiento.fecha} · ${movimiento.concepto} · $${movimiento.importe}`;
+            `${movimiento.fecha} · ${movimiento.concepto} · ${importe} · ${tipo}`;
 
         input.value = "";
+        input.focus();
 
     } catch (error) {
         console.error(error);
