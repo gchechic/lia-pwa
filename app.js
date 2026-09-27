@@ -170,7 +170,9 @@ boton.addEventListener("click", async function () {
 
 if ("serviceWorker" in navigator) {
 
-    navigator.serviceWorker.register("./sw.js")
+    navigator.serviceWorker.register("./sw.js?v=6", {
+        updateViaCache: "none"
+    }).then(registration => registration.update())
         .catch(error =>
             console.error(
                 "Error registrando Service Worker:",

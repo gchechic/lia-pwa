@@ -1,10 +1,10 @@
-const CACHE_NAME = "lia-v5";
+const CACHE_NAME = "lia-v6";
 
 const ARCHIVOS = [
     "./",
     "./index.html",
     "./styles.css",
-    "./app.js",
+    "./app.js?v=2",
     "./manifest.json",
     "./assets/icon-192.png",
     "./assets/icon-512.png"
@@ -13,7 +13,9 @@ const ARCHIVOS = [
 self.addEventListener("install", event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(ARCHIVOS))
+            .then(cache => cache.addAll(ARCHIVOS.map(path =>
+                new Request(new URL(path, self.registration.scope), { cache: "reload" })
+            )))
             .then(() => self.skipWaiting())
     );
 });
