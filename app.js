@@ -3,14 +3,14 @@ const API_URL = "https://script.google.com/macros/s/AKfycbw7ecZIF70pjXDkNtDv4OnX
 const input = document.getElementById("movimiento");
 const boton = document.getElementById("registrar");
 const estado = document.getElementById("estado");
+const confirmacion = document.getElementById("confirmacion");
+const detalleConfirmacion = document.getElementById("confirmacion-detalle");
+const botonEditar = document.getElementById("editar");
+const botonConfirmar = document.getElementById("confirmar");
+let textoPendiente = "";
 
-boton.addEventListener("click", async function () {
-
+boton.addEventListener("click", function () {
     const texto = input.value.trim();
-
-    // -----------------------------
-    // VALIDACIÓN
-    // -----------------------------
 
     if (!texto) {
         estado.textContent = "Escribí un movimiento.";
@@ -18,28 +18,32 @@ boton.addEventListener("click", async function () {
         return;
     }
 
-    // -----------------------------
-    // CONFIRMACIÓN
-    // -----------------------------
+    textoPendiente = texto;
+    detalleConfirmacion.textContent = texto;
+    estado.textContent = "";
+    confirmacion.hidden = false;
+    boton.disabled = true;
+    boton.hidden = true;
+    input.disabled = true;
+    botonConfirmar.focus();
+});
 
-    const confirmar = window.confirm(
-        "¿Querés registrar este movimiento?\n\n" +
-        texto
-    );
+botonEditar.addEventListener("click", function () {
+    confirmacion.hidden = true;
+    boton.hidden = false;
+    boton.disabled = false;
+    input.disabled = false;
+    textoPendiente = "";
+    input.focus();
+});
 
-    if (!confirmar) {
-        estado.textContent = "Registro cancelado.";
-        input.focus();
+botonConfirmar.addEventListener("click", async function () {
+    if (!textoPendiente) {
         return;
     }
 
-    // -----------------------------
-    // REGISTRANDO
-    // -----------------------------
-
-    boton.disabled = true;
-    input.disabled = true;
-
+    botonConfirmar.disabled = true;
+    botonEditar.disabled = true;
     estado.textContent = "Registrando...";
 
     try {
@@ -52,7 +56,7 @@ boton.addEventListener("click", async function () {
             },
 
             body: JSON.stringify({
-                frase: texto
+                frase: textoPendiente
             })
         });
 
@@ -151,15 +155,16 @@ boton.addEventListener("click", async function () {
         // MOSTRAR ERROR
         // -----------------------------
 
-        estado.innerHTML =
-            "❌ <b>No se pudo registrar</b><br>" +
-            error.message;
-
-        input.disabled = false;
+        estado.textContent = "❌ No se pudo registrar\n" + error.message;
+    } finally {
+        confirmacion.hidden = true;
+        boton.hidden = false;
         boton.disabled = false;
-
+        botonConfirmar.disabled = false;
+        botonEditar.disabled = false;
+        input.disabled = false;
+        textoPendiente = "";
         input.focus();
-
     }
 });
 
@@ -170,7 +175,7 @@ boton.addEventListener("click", async function () {
 
 if ("serviceWorker" in navigator) {
 
-    navigator.serviceWorker.register("./sw.js?v=6", {
+    navigator.serviceWorker.register("./sw.js?v=7", {
         updateViaCache: "none"
     }).then(registration => registration.update())
         .catch(error =>

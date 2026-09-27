@@ -1,10 +1,10 @@
-const CACHE_NAME = "lia-v6";
+const CACHE_NAME = "lia-v7";
 
 const ARCHIVOS = [
     "./",
     "./index.html",
     "./styles.css",
-    "./app.js?v=2",
+    "./app.js?v=3",
     "./manifest.json",
     "./assets/icon-192.png",
     "./assets/icon-512.png"
