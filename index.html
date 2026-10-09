@@ -31,11 +31,16 @@
         </button>
 
         <section id="confirmacion" class="confirmacion" hidden aria-labelledby="confirmacion-titulo">
-            <h2 id="confirmacion-titulo">¿Confirmamos este movimiento?</h2>
+            <h2 id="confirmacion-titulo">Revisá la interpretación</h2>
             <p id="confirmacion-detalle" class="confirmacion-detalle"></p>
+            <label for="direccion">¿A quién corresponde?</label>
+            <select id="direccion">
+                <option value="false">A mi favor</option>
+                <option value="true">A favor de Lia</option>
+            </select>
             <div class="confirmacion-acciones">
-                <button id="editar" class="button-secondary" type="button">Editar</button>
-                <button id="confirmar" type="button">Confirmar</button>
+                <button id="editar" class="button-secondary" type="button">Editar texto</button>
+                <button id="confirmar" type="button">Confirmar registro</button>
             </div>
         </section>
 
@@ -44,7 +49,7 @@
         </div>
     </main>
 
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 
 </body>
 </html>

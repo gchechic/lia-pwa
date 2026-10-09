@@ -66,14 +66,33 @@ button {
 }
 
 .confirmacion-detalle {
-    margin: 0;
-    font-size: 20px;
+    margin: 0 0 16px;
+    font-size: 18px;
+    line-height: 1.45;
     overflow-wrap: anywhere;
+}
+
+.confirmacion label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.confirmacion select {
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 12px;
+    border: 1px solid #a5c9a7;
+    border-radius: 8px;
+    background: white;
+    color: #222;
+    font-size: 17px;
 }
 
 .confirmacion-acciones {
     display: grid;
-    grid-template-columns: 1fr 1.3fr;
+    grid-template-columns: 1fr 1.4fr;
     gap: 10px;
     margin-top: 14px;
 }

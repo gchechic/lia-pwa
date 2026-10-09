@@ -5,11 +5,37 @@ const boton = document.getElementById("registrar");
 const estado = document.getElementById("estado");
 const confirmacion = document.getElementById("confirmacion");
 const detalleConfirmacion = document.getElementById("confirmacion-detalle");
+const direccion = document.getElementById("direccion");
 const botonEditar = document.getElementById("editar");
 const botonConfirmar = document.getElementById("confirmar");
-let textoPendiente = "";
+let borradorId = "";
 
-boton.addEventListener("click", function () {
+async function solicitarApi(datos) {
+    const respuesta = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(datos)
+    });
+
+    let resultado;
+    try {
+        resultado = await respuesta.json();
+    } catch (error) {
+        throw new Error("El servidor respondió algo que no es JSON.");
+    }
+
+    if (!respuesta.ok || !resultado.ok) {
+        throw new Error(
+            resultado.error || resultado.message || `Error HTTP ${respuesta.status}`
+        );
+    }
+
+    return resultado;
+}
+
+boton.addEventListener("click", async function () {
     const texto = input.value.trim();
 
     if (!texto) {
@@ -18,94 +44,82 @@ boton.addEventListener("click", function () {
         return;
     }
 
-    textoPendiente = texto;
-    detalleConfirmacion.textContent = texto;
-    estado.textContent = "";
-    confirmacion.hidden = false;
+    boton.textContent = "Interpretando...";
     boton.disabled = true;
-    boton.hidden = true;
     input.disabled = true;
-    botonConfirmar.focus();
+
+    try {
+        const resultado = await solicitarApi({
+            accion: "previsualizar",
+            frase: texto
+        });
+        const movimiento = resultado.movimiento;
+
+        if (!resultado.borradorId || !movimiento) {
+            throw new Error("El servidor no devolvió una interpretación válida.");
+        }
+
+        const importeNumerico = Number(movimiento.importe);
+        if (!Number.isFinite(importeNumerico) || !movimiento.concepto || typeof movimiento.paraLia !== "boolean") {
+            throw new Error("La interpretación está incompleta. Editá el texto e intentá nuevamente.");
+        }
+
+        borradorId = resultado.borradorId;
+        const importe = "$" + importeNumerico.toLocaleString("es-AR");
+        detalleConfirmacion.textContent = [
+            movimiento.fecha,
+            movimiento.concepto,
+            importe
+        ].filter(Boolean).join(" · ");
+        direccion.value = movimiento.paraLia ? "true" : "false";
+        estado.textContent = "";
+        confirmacion.hidden = false;
+        boton.hidden = true;
+        boton.textContent = "Registrar";
+        botonConfirmar.focus();
+    } catch (error) {
+        console.error("Error interpretando movimiento:", error);
+        estado.textContent = "No se pudo interpretar el movimiento.\n" + error.message;
+        input.disabled = false;
+        boton.disabled = false;
+        boton.textContent = "Registrar";
+        input.focus();
+    }
 });
 
 botonEditar.addEventListener("click", function () {
     confirmacion.hidden = true;
+    estado.textContent = "";
     boton.hidden = false;
     boton.disabled = false;
+    boton.textContent = "Registrar";
     input.disabled = false;
-    textoPendiente = "";
+    borradorId = "";
     input.focus();
 });
 
 botonConfirmar.addEventListener("click", async function () {
-    if (!textoPendiente) {
+    if (!borradorId) {
         return;
     }
 
     botonConfirmar.disabled = true;
     botonEditar.disabled = true;
     estado.textContent = "Registrando...";
+    let guardado = false;
 
     try {
-
-        const respuesta = await fetch(API_URL, {
-            method: "POST",
-
-            headers: {
-                "Content-Type": "text/plain;charset=utf-8"
-            },
-
-            body: JSON.stringify({
-                frase: textoPendiente
-            })
+        const resultado = await solicitarApi({
+            accion: "confirmar",
+            borradorId: borradorId,
+            paraLia: direccion.value === "true"
         });
-
-        // Intentamos obtener JSON
-        let resultado;
-
-        try {
-            resultado = await respuesta.json();
-        } catch (jsonError) {
-
-            throw new Error(
-                "El servidor respondió algo que no es JSON."
-            );
-        }
-
         console.log("Respuesta de Apps Script:", resultado);
-
-        // -----------------------------
-        // ERROR DEVUELTO POR BACKEND
-        // -----------------------------
-
-        if (!respuesta.ok) {
-
-            throw new Error(
-                resultado.error ||
-                resultado.message ||
-                `Error HTTP ${respuesta.status}`
-            );
-        }
-
-        if (!resultado.ok) {
-
-            throw new Error(
-                resultado.error ||
-                resultado.message ||
-                "No se pudo registrar el movimiento."
-            );
-        }
-
-        // -----------------------------
-        // MOVIMIENTO INTERPRETADO
-        // -----------------------------
 
         const movimiento = resultado.movimiento;
 
         if (!movimiento) {
-            throw new Error(
-                "El servidor confirmó el registro pero no devolvió el movimiento interpretado."
-            );
+            throw new Error("El servidor no devolvió el movimiento registrado.");
         }
 
         const importe = "$" +
@@ -117,54 +131,33 @@ botonConfirmar.addEventListener("click", async function () {
             ? "A favor de Lia"
             : "A mi favor";
 
-        // -----------------------------
-        // MOSTRAR RESULTADO
-        // -----------------------------
-
-        estado.innerHTML =
-            "✅ <b>Movimiento registrado</b><br>" +
-            movimiento.fecha + " · " +
-            movimiento.concepto + " · " +
-            importe + "<br>" +
-            tipo;
-
-        // -----------------------------
-        // VIBRACIÓN
-        // -----------------------------
+        estado.textContent = "✅ Movimiento registrado\n" +
+            [movimiento.fecha, movimiento.concepto, importe, tipo]
+                .filter(Boolean)
+                .join(" · ");
+        guardado = true;
 
         if (navigator.vibrate) {
             navigator.vibrate(150);
         }
 
-        // -----------------------------
-        // LIMPIAR PARA EL PRÓXIMO
-        // -----------------------------
-
         input.value = "";
-
-        input.disabled = false;
-        boton.disabled = false;
-
-        input.focus();
-
     } catch (error) {
-
         console.error("Error registrando movimiento:", error);
-
-        // -----------------------------
-        // MOSTRAR ERROR
-        // -----------------------------
-
         estado.textContent = "❌ No se pudo registrar\n" + error.message;
     } finally {
-        confirmacion.hidden = true;
-        boton.hidden = false;
-        boton.disabled = false;
-        botonConfirmar.disabled = false;
-        botonEditar.disabled = false;
-        input.disabled = false;
-        textoPendiente = "";
-        input.focus();
+        if (guardado) {
+            confirmacion.hidden = true;
+            boton.hidden = false;
+            boton.disabled = false;
+            boton.textContent = "Registrar";
+            input.disabled = false;
+            borradorId = "";
+            input.focus();
+        } else {
+            botonConfirmar.disabled = false;
+            botonEditar.disabled = false;
+        }
     }
 });
 
@@ -175,7 +168,7 @@ botonConfirmar.addEventListener("click", async function () {
 
 if ("serviceWorker" in navigator) {
 
-    navigator.serviceWorker.register("./sw.js?v=7", {
+    navigator.serviceWorker.register("./sw.js?v=8", {
         updateViaCache: "none"
     }).then(registration => registration.update())
         .catch(error =>
