@@ -147,6 +147,8 @@ botonConfirmar.addEventListener("click", async function () {
         estado.textContent = "❌ No se pudo registrar\n" + error.message;
     } finally {
         if (guardado) {
+            botonConfirmar.disabled = false;
+            botonEditar.disabled = false;
             confirmacion.hidden = true;
             boton.hidden = false;
             boton.disabled = false;
@@ -168,7 +170,7 @@ botonConfirmar.addEventListener("click", async function () {
 
 if ("serviceWorker" in navigator) {
 
-    navigator.serviceWorker.register("./sw.js?v=8", {
+    navigator.serviceWorker.register("./sw.js?v=9", {
         updateViaCache: "none"
     }).then(registration => registration.update())
         .catch(error =>
